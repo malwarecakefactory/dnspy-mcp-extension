@@ -31,6 +31,16 @@ Embedding inside dnSpy gives access to capabilities that standalone tools cannot
 - **Tree view state** — know what the analyst is currently looking at
 - **Cross-references** — who calls what, call graph analysis via IL scanning
 
+## AI Chat Capabilities
+
+This extension now exposes an AI chat interface through MCP so an LLM can interact with the loaded dnSpy session.
+
+- Send prompts from Claude Code to dnSpy and receive assistant responses back in the chat history.
+- Automatically include the current selection in prompts when enabled.
+- The chat history is persisted between sessions and scrolls automatically as new responses arrive.
+- Each message includes a copy button so analysts can quickly copy assistant output to the clipboard.
+- The system can inspect loaded assemblies, selected nodes, decompiled code, and other dnSpy state to answer context-aware reverse engineering questions.
+
 ---
 
 ## Quick Start
@@ -165,6 +175,8 @@ Or manually edit `~/.config/claude/config.json`:
 }
 ```
 
+In dnSpy, you can now open `Help > MCP Server Setup` to copy the recommended `claude mcp add` command and the paste-ready JSON snippet.
+
 ### 7. Load a Sample and Analyze
 
 1. In dnSpy on Windows, open a .NET malware sample: **File > Open** or drag-and-drop
@@ -287,6 +299,44 @@ claude mcp add dnspy --transport http --url http://<IP>:9000/mcp
 | `RenameField` | Rename a field |
 | `BatchRename` | Bulk rename types/methods/fields for deobfuscation |
 | `SaveAssembly` | Save modified assembly to disk after deobfuscation |
+
+### IL Edit Tools (require `confirm=true`)
+
+| Tool | Description |
+|------|-------------|
+| `ReplaceWithReturnDefault` | Replace method body so it returns immediately (default value). Neuters checks. |
+| `ReplaceWithBoolReturn` | Force a `bool`-returning method to always return `true` or `false`. |
+| `ReplaceWithThrow` | Replace method body with `throw new NotImplementedException()`. |
+| `NopInstruction` | NOP-out a single instruction at an IL offset. |
+| `ReplaceOpcode` | Replace one operand-less opcode with another (`nop`/`ret`/`ldnull`/`ldc.i4.0|1`/`pop`/`dup`/`throw`/`endfinally`). |
+| `StripAttributes` | Remove obfuscator marker attributes by substring match (e.g. `Confused`, `SmartAssembly`). |
+
+### Debugger Control Tools
+
+These work whenever dnSpy's debugger extension is loaded (the default install). They are
+implemented via reflection so the extension does not need an extra debugger DLL in `lib\`.
+
+| Tool | Description |
+|------|-------------|
+| `DebuggerStatus` | Report processes, threads, debugger state. |
+| `Continue` | Resume all paused processes. |
+| `Break` | Pause all running processes. |
+| `Stop` | Terminate the debuggee. |
+| `StepInto` / `StepOver` / `StepOut` | Single-step the current thread. |
+
+---
+
+## Note: HTTP transport vs. `mcp-proxy`
+
+The extension serves **streamable HTTP** at `http://<host>:<port>/mcp`. This is the
+correct architecture and works directly with:
+
+- Claude Code: `claude mcp add dnspy --transport http --url http://<IP>:8765/mcp`
+- Any HTTP-capable MCP client.
+
+If your client only speaks stdio (older Claude Desktop, some MCP CLIs), front the
+HTTP server with `mcp-proxy` (`pip install mcp-proxy`). That is not a workaround for
+a bug in this extension; it is the standard bridge for stdio-only clients.
 
 ---
 

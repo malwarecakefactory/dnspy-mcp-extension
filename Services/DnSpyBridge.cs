@@ -52,8 +52,8 @@ public sealed class DnSpyBridge
         return RunOnUiThread(() =>
             DocumentService.GetDocuments()
                 .Select(d => d.ModuleDef)
-                .Where(m => m != null)
-                .ToList()!
+                .OfType<ModuleDef>()
+                .ToList()
         );
     }
 

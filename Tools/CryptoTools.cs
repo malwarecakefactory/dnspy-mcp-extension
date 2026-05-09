@@ -370,7 +370,6 @@ public static class CryptoTools
 
             // Check for .NET CLR header
             bool isDotNet = false;
-            string? clrVersion = null;
             if (peOffset + 0x98 + 8 < data.Length)
             {
                 int clrRva = BitConverter.ToInt32(data, peOffset + 0xE8); // COM descriptor in PE32+

@@ -56,7 +56,7 @@ public sealed class McpServerHost
                 return Microsoft.AspNetCore.Http.Results.Ok(new { status = "ok", tool_count = typeof(McpServerHost).Assembly.GetTypes().Length });
             });
 
-            _app.MapMcp();
+            _app.MapMcp("/mcp");
             Diagnostics.Log("[Host] MapMcp done");
 
             await _app.StartAsync();
